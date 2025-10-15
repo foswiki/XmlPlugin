@@ -1,0 +1,6 @@
+!noci
+data/System/XmlPlugin.txt 0644
+lib/Foswiki/Plugins/XmlPlugin/Core.pm 0644
+lib/Foswiki/Plugins/XmlPlugin/DEPENDENCIES 0644
+lib/Foswiki/Plugins/XmlPlugin/MANIFEST 0644
+lib/Foswiki/Plugins/XmlPlugin.pm 0644

@@ -1,0 +1,81 @@
+%META:TOPICINFO{author="micha" comment="reprev" date="1760174352" format="1.1" reprev="2" version="2"}%
+---+!! %TOPIC%
+%FORMFIELD{"Description"}%
+
+%TOC%
+
+---++ Description
+
+This plugin is used to process XML data using XPath or XSLT. There are two distinct use cases for this plugin:
+
+   * picking a few values from an xml database
+   * transform xml data into a suitable way
+
+For the first use case xpath is the easiest way to come to good results quickly. This approach starts
+at a given set of nodes and formats their properties the Foswiki way (header, format, separator, footer).
+Note however the limitations given that xml data may be more complex that this approach allows to access it.
+In this case xslt is more flexible reformating data as required. 
+
+Note that the xslt processor does not allow to import or export any data from within an xslt itself for security
+reasons. It may only be used to transform the given xml data and only use the xslt file provided.
+
+---++ Syntax
+
+=%<nop>XML{"&lt;xml-attachment>" [params]}%=
+
+| *Parameter* | *Description* | *Default* |
+| "..." or attachment="..." | name of the xml file attached to a topic | | 
+| topic="..." | topic where the xml file is attached to | current topic | 
+| raw="on/off" | output the xml file as is | off | 
+| xpath="..." | xpath expression to find nodes | | 
+| xslt="..." | xslt string provided inline to process the xml file with | | 
+| xslt_attachment="..." | name of the xslt file attached to a topic being used to process the xml data | | 
+| xslt_topic="..." | topic where the xslt file is attached to | see topic parameter | 
+| &lt;customParameter>="..." | custom parameter(s) that are passed to the xslt transformer | | 
+| header="...", format="...", separator="..." footer="..." | format strings used in xpath mode | |
+| skip="..." | in xpath mode number of nodes to skip | _none_ |
+| limit="..." | in xpath mode number of nodes to format | _all_ |
+
+Note that the macro operates in either raw, xslt or xpath mode. In xpath mode the format strings
+header, format, separator, footer are used. In xslt mode the output of the transformation is being inserted.
+For each node found using the =xpath= parameter, the =format= string is used to output results with following variables:
+
+   * =$index=: running index of found nodes
+   * =$nodeName=: name of the current node 
+   * =$nodeValue=: value of the node
+   * =$nodeType=: node type
+   * =$textContent=: text within the current node
+   * =$find(...)=: a subsequent xpath expressions to find more values starting at the current node
+   * =$encode(...)=: entity encode a string
+
+---++ Examples
+
+<verbatim>
+%XML{"books.xml" xslt_attachment="table_of_books.xslt"}%
+</verbatim>
+
+<verbatim>
+%XML{"books.xml" xslt_attachment="display_book.xslt" book_id="%URLPARAM{"id"}%"}%
+</verbatim>
+
+---++ Installation Instructions
+%$INSTALL_INSTRUCTIONS%
+
+---++ Dependencies
+%$DEPENDENCIES%
+
+---++ Change History
+
+%TABLE{columnwidths="7em" tablewidth="100%"}%
+| | |
+
+%META:FORM{name="PackageForm"}%
+%META:FIELD{name="Author" title="Author" value="MichaelDaum"}%
+%META:FIELD{name="Version" title="Version" value="%25$VERSION%25"}%
+%META:FIELD{name="Release" title="Release" value="%25$RELEASE%25"}%
+%META:FIELD{name="Description" title="Description" value="%25$SHORTDESCRIPTION%25"}%
+%META:FIELD{name="Repository" title="Repository" value="https://github.com/foswiki/%25$ROOTMODULE%25"}%
+%META:FIELD{name="Copyright" title="Copyright" value="2025, MichaelDaum, All Rights Reserved"}%
+%META:FIELD{name="License" title="License" value="GPL ([[http://www.gnu.org/copyleft/gpl.html][GNU General Public License]])"}%
+%META:FIELD{name="Home" title="Home" value="http://foswiki.org/Extensions/%25$ROOTMODULE%25"}%
+%META:FIELD{name="Support" title="Support" value="http://foswiki.org/Support/%25$ROOTMODULE%25"}%
