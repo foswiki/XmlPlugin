@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" comment="" date="1760545411" format="1.1"  version="1"}%
+%META:TOPICINFO{author="ProjectContributor" comment="" date="1773769042" format="1.1"  version="1"}%
 ---+!! %TOPIC%
 %FORMFIELD{"Description"}%
 
@@ -58,6 +58,41 @@ For each node found using the =xpath= parameter, the =format= string is used to 
 %XML{"books.xml" xslt_attachment="display_book.xslt" book_id="%URLPARAM{"id"}%"}%
 </verbatim>
 
+---++ XSLT extensions
+
+Some Foswiki APIs have been registered to XSLT into the =foswiki= namespace.
+
+| *Function* | *Description* |
+| =entityEncode(_arg1, arg2, ..._)= | entity encodes all args and concatentates them |
+| =entityDecode(_arg1, arg2, ..._)= | |
+| =urlEncode(_arg1, arg2, ...)= | |
+| =urlDecode(_arg1, arg2, ...)= | |
+| =isTrue(_arg_)= | returns 1 if the argument is true-ish | 
+| =getScriptUrl(_web_, _topic_, _script, _arg1_, _arg2_, ..._)= | |
+| =getScriptUrlPath(_web_, _topic_, _script, _arg1_, _arg2_, ..._)= | |
+| =getPubUrlPath(...)_= | |
+| =getPreferencesValue(_key_, _[web]_)= | |
+| =getPreferencesFlag(_key_, _[web]_)= | |
+| =extract(_text_, _pattern_)= | extracts a _pattern_ in the _text_; the _pattern_ must include at least one bracket group |
+| =subst(_text_, _pattern_, _with_, _flags_)= | replaces _pattern_ in the _text_ with a substitute; optional _flags_ can be "g", "gi" or "i" as used in perl's regex processor |
+
+To make use of them you must register the namespace in the xml preamble. Here is an example of how to use =urlEncode=:
+
+<verbatim>
+<xsl:stylesheet version='1.0' 
+   xmlns:xsl='http://www.w3.org/1999/XSL/Transform' 
+   xmlns:foswiki="urn:foswiki">
+...
+   <a>
+      <xsl:attribute name="href">
+         <xsl:value-of select="concat('?id=', foswiki:urlEncode(PRODUCT_ID))" />
+      </xsl:attribute>
+      ...
+   </a>
+...
+</xsl:stylesheet>
+</verbatim>
+
 ---++ Installation Instructions
 %$INSTALL_INSTRUCTIONS%
 
@@ -67,6 +102,7 @@ For each node found using the =xpath= parameter, the =format= string is used to 
 ---++ Change History
 
 %TABLE{columnwidths="7em" tablewidth="100%"}%
+|  28 Jan 2026 | added some Foswiki XSLT extensions |
 |  15 Oct 2025 | initial release |
 
 %META:FORM{name="PackageForm"}%
@@ -75,7 +111,7 @@ For each node found using the =xpath= parameter, the =format= string is used to 
 %META:FIELD{name="Release" title="Release" value="%25$RELEASE%25"}%
 %META:FIELD{name="Description" title="Description" value="%25$SHORTDESCRIPTION%25"}%
 %META:FIELD{name="Repository" title="Repository" value="https://github.com/foswiki/%25$ROOTMODULE%25"}%
-%META:FIELD{name="Copyright" title="Copyright" value="2025, Michael Daum, All Rights Reserved"}%
+%META:FIELD{name="Copyright" title="Copyright" value="2025-2026, Michael Daum, All Rights Reserved"}%
 %META:FIELD{name="License" title="License" value="GPL ([[http://www.gnu.org/copyleft/gpl.html][GNU General Public License]])"}%
 %META:FIELD{name="Home" title="Home" value="http://foswiki.org/Extensions/%25$ROOTMODULE%25"}%
 %META:FIELD{name="Support" title="Support" value="http://foswiki.org/Support/%25$ROOTMODULE%25"}%

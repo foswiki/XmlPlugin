@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, https://foswiki.org/
 #
-# XmlPlugin is Copyright (C) 2025 Michael Daum http://michaeldaumconsulting.com
+# XmlPlugin is Copyright (C) 2025-2026 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -28,7 +28,7 @@ use warnings;
 
 use Foswiki::Func ();
 
-our $VERSION = '1.00';
+our $VERSION = '2.00';
 our $RELEASE = '%$RELEASE%';
 our $SHORTDESCRIPTION = 'Process XML files using XPath or XSLT';
 our $LICENSECODE = '%$LICENSECODE%';

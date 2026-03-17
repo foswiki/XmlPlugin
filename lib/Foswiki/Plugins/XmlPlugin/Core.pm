@@ -1,6 +1,6 @@
 # Plugin for Foswiki - The Free and Open Source Wiki, https://foswiki.org/
 #
-# XmlPlugin is Copyright (C) 2025 Michael Daum http://michaeldaumconsulting.com
+# XmlPlugin is Copyright (C) 2025-2026 Michael Daum http://michaeldaumconsulting.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -28,6 +28,8 @@ an singleton instance is allocated on demand
 use strict;
 use warnings;
 
+
+use Foswiki ();
 use Foswiki::Func ();
 use XML::LibXML;
 use XML::LibXSLT;
@@ -43,6 +45,97 @@ boolean toggle to enable debugging of this class
 =cut
 
 use constant TRACE => 0; # toggle me
+
+BEGIN {
+  XML::LibXSLT->register_function("urn:foswiki", "entityEncode", sub { 
+    return join("", map {Foswiki::entityEncode($_)} @_);
+  });
+
+  XML::LibXSLT->register_function("urn:foswiki", "entityDecode", sub { 
+    return join("", map {Foswiki::entityDecode($_)} @_);
+  });
+
+  XML::LibXSLT->register_function("urn:foswiki", "urlEncode", sub { 
+    return join("", map {Foswiki::urlEncode($_)} @_) // '';
+  });
+
+  XML::LibXSLT->register_function("urn:foswiki", "urlDecode", sub { 
+    return join("", map {Foswiki::urlDecode($_)} @_);
+  });
+
+  XML::LibXSLT->register_function("urn:foswiki", "isTrue", sub { 
+    return Foswiki::Func::isTrue(shift);
+  });
+
+  XML::LibXSLT->register_function("urn:foswiki", "getScriptUrl", sub { 
+    return Foswiki::Func::getScriptUrl (@_);
+  });
+
+  XML::LibXSLT->register_function("urn:foswiki", "getScriptUrlPath", sub { 
+    return Foswiki::Func::getScriptUrlPath(@_);
+  });
+
+  XML::LibXSLT->register_function("urn:foswiki", "getPubUrlPath", sub { 
+    return Foswiki::Func::getPubUrlPath(@_);
+  });
+
+  XML::LibXSLT->register_function("urn:foswiki", "inContext", sub { 
+    my $id = shift // '';
+    return exists(Foswiki::Func::getContext()->{$id}) ? 1 : 0;
+  });
+
+  XML::LibXSLT->register_function("urn:foswiki", "getPreferencesValue", sub { 
+    return Foswiki::Func::getPreferencesValue(@_);
+  });
+
+  XML::LibXSLT->register_function("urn:foswiki", "getPreferencesFlag", sub { 
+    return Foswiki::Func::getPreferencesFlag(@_);
+  });
+
+  XML::LibXSLT->register_function("urn:foswiki", "extract", sub { 
+    my ($text, $pattern) = @_;
+
+    $text = quotemeta($text // "");
+    $pattern //= "";
+
+    return safeEval("'$text' =~ /$pattern/; return \$1;") 
+  });
+
+  XML::LibXSLT->register_function("urn:foswiki", "subst", sub { 
+    my ($text, $pattern, $with, $flags) = @_;
+
+    $flags //= "";
+    $text = quotemeta($text // "");
+    $pattern //= "";
+    $with //= "";
+
+    return safeEval("my \$res = '$text'; \$res =~ s/$pattern/$with/$flags; return \$res;") 
+  });
+}
+
+=begin TML
+
+---++ ObjectMethod safeEval() 
+
+safe eval using a secured compartment
+
+=cut
+
+my $safeCpt;
+sub safeEval {
+  my $text = shift;
+
+  unless (defined $safeCpt) {
+    $safeCpt = Safe->new();
+    $safeCpt->deny(":subprocess");
+  }
+
+  my $res = $safeCpt->reval($text, 1);
+  #print STDERR "called safeEval($text) = ".($res//'undef')."\n";
+
+  return $res;
+}
+
 
 =begin TML
 
@@ -77,6 +170,7 @@ sub finish {
 
   undef $this->{session};
   undef $this->{security};
+  undef $safeCpt;
 
   foreach my $key (keys %{$this->{xmls}}) {
     undef $this->{xmls}{$key};
@@ -99,9 +193,6 @@ sub XML {
   _writeDebug("called XML(web=$web, topic=$topic, params=$params)");
   ($web, $topic) = Foswiki::Func::normalizeWebTopicName($params->{web} // $web, $params->{topic} // $topic);
   return _inlineError("topic not found") unless Foswiki::Func::topicExists($web, $topic);
-
-  my $wikiName = Foswiki::Func::getWikiName();
-  return _inlineError("access denied") unless Foswiki::Func::checkAccessPermission("VIEW", $wikiName, undef, $topic, $web);
 
   my $xmlAttachment = $params->{_DEFAULT} // $params->{attachment};
   return _inlineError("no attachment specified") unless $xmlAttachment;
@@ -210,6 +301,9 @@ address. throws an exception if anything goes wrong.
 
 sub getXmlFromAttachment {
   my ($this, $web, $topic, $attachment) = @_;
+
+  my $wikiName = Foswiki::Func::getWikiName();
+  throw Error::Simple("access denied") unless Foswiki::Func::checkAccessPermission("VIEW", $wikiName, undef, $topic, $web);
 
   $web =~ s/\./\//g;
   my $file = $Foswiki::cfg{PubDir} . "/" . $web . "/" . $topic . "/" . $attachment;
